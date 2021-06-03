@@ -1,0 +1,10 @@
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 5vh;
+}
+
+.slider {
+    margin-left: auto;
+}

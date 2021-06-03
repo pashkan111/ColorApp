@@ -1,0 +1,24 @@
+.Pallete {
+    height: 100vh;
+}
+
+.Pallete-color {
+    height: 90%;
+}
+
+.slider {
+    width: 340px;
+    margin: 0 10px;
+    display: inline-block;
+}
+
+.rc-slider-track {
+    background-color: transparent;
+}
+
+.rc-slider-handle {
+    background-color: green;
+    outline: none;
+    border: 2px solid;
+    box-shadow: none;
+}
