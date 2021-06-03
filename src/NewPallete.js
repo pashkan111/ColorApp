@@ -1,26 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import Hidden from '@material-ui/core/Hidden';
 import IconButton from '@material-ui/core/IconButton';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import MailIcon from '@material-ui/icons/Mail';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import {ChromePicker, SketchPicker} from 'react-color'
-import DragableBox from './DragableBox'
+import {ChromePicker} from 'react-color'
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
-import colorBox from './colorBox';
+import DragableColorList from './DragableColorList'
+import {arrayMove} from 'react-sortable-hoc';
+import FormDialog from './Form'
+
 
 const drawerWidth = 260;
 
@@ -85,7 +79,7 @@ function NewPallete(props) {
 
   function createPallete() {
       const newObj = {
-        color: Color, id: Date.now(), title: boxName
+        color: Color, id: Date.now(), name: boxName
       }
       if (arr.length<20) {
         setArr([...arr, newObj])
@@ -106,9 +100,11 @@ function NewPallete(props) {
      }
   }, [])
 
+  const arrOfColors = JSON.parse(localStorage.getItem('colors'))
+
   React.useEffect(() => {
     const existingPalleteNames = []
-    existingPalleteNames.push(JSON.parse(localStorage.getItem('colors')).map(item => (
+    existingPalleteNames.push(arrOfColors.map(item => (
       item.paletteName
     )));
     ValidatorForm.addValidationRule('isPalleteNameUnique', (value) => {
@@ -131,13 +127,29 @@ function savePallete() {
 }
   function handlePalleteName(e) {
     setPalleteName(e.target.value)
-    console.log(palleteName)
   }
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
   function deleteIcon(id) {
     setArr(prev => prev.filter(item => item.id !== id))
+  }
+
+  const onSortEnd = ({oldIndex, newIndex}) => {
+    setArr(i => arrayMove(i, oldIndex, newIndex))
+  }
+
+  function removeAll() {
+    setArr([])
+  }
+  
+  function getRandomInt() {
+    return Math.floor(Math.random() * 10);
+  }
+
+
+  function randomAll() {
+    setArr(arrOfColors[getRandomInt()].colors)
   }
 
   return (
@@ -153,20 +165,9 @@ function savePallete() {
             className={classes.menuButton}
           >
             <MenuIcon />
-          </IconButton>
-          <ValidatorForm onSubmit={savePallete}>
-            `<Button variant='contained'
-                  color='secondary'
-                  type='submit'
-              >`
-                  Сохранить
-              </Button>
-              <TextValidator 
-                  value={palleteName}
-                  onChange={handlePalleteName}
-                  validators={['required']}
-                  errorMessages={['Поле не может быть пустым']}></TextValidator>
-            </ValidatorForm>
+          </IconButton>          
+              <FormDialog palleteName={palleteName} savePallete={savePallete}
+handlePalleteName={handlePalleteName} />
         </Toolbar>
       </AppBar>
       <nav className={classes.drawer} aria-label="mailbox folders">
@@ -196,10 +197,10 @@ function savePallete() {
             open
           >
               <div>
-                <Button variant='contained' color='primary'>
+                <Button variant='contained' color='primary' onClick={randomAll}>
                         Добавить случайный
                 </Button>
-                <Button variant='contained' color='secondary'>
+                <Button variant='contained' color='secondary' onClick={removeAll}>
                         Очистить
                 </Button>
               </div>
@@ -224,9 +225,7 @@ function savePallete() {
       </nav>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-            {arr.map(i => (
-                    <DragableBox key={i.id} color={i.color} title={i.title} id={i.id} deleteIcon={deleteIcon} />
-                ))}
+            <DragableColorList arr={arr} deleteIcon={deleteIcon} axis='xy' onSortEnd={onSortEnd}/>
       </main>
     </div>
   );
